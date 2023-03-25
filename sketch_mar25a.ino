@@ -42,7 +42,7 @@ void setup() {
 
   // set the RX address of the TX node into a RX pipe
   radio.openReadingPipe(1, address);  // using pipe 1
-
+   radio.setDataRate(RF24_2MBPS);
   // additional setup specific to the node's role
   radio.startListening();  // put radio in RX mo
 }
@@ -145,14 +145,12 @@ void Send_sensor_readings(){
 void loop() {
     uint8_t pipe;
     if (radio.available(&pipe)) {  
-      digitalWrite(LED1,HIGH);
-      digitalWrite(LED2,HIGH);
       //uint8_t bytes = radio.getPayloadSize();  // get the size of the payload
       long data;
       radio.read(&data, sizeof(long));
       String receivedString = String(data);
       //receivedString.trim(); // remove any leading/trailing white space
-      Serial.println(receivedString);
+      //Serial.println(receivedString);
       //Serial.println(receivedString);
       int values[5]; // array to store the split values
       values[0] = receivedString[0]- '0';
@@ -160,13 +158,13 @@ void loop() {
       values[2] = receivedString[2]- '0';
       values[3] = receivedString.substring(3,6).toInt();
       values[4] = receivedString.substring(6,9).toInt();
-      Serial.print(values[0]);Serial.print(",");
-      Serial.print(values[1]);Serial.print(",");
-      Serial.print(values[2]);Serial.print(",");
-      Serial.print(values[3]);Serial.print(",");
-      Serial.print(values[4]);Serial.println(",");
-      if (values[0]==7){
-        Serial.print("I'm moving!");
+      //Serial.print(values[0]);Serial.print(",");
+      //Serial.print(values[1]);Serial.print(",");
+      //Serial.print(values[2]);Serial.print(",");
+      //Serial.print(values[3]);Serial.print(",");
+      //Serial.print(values[4]);Serial.println(",");
+      if (values[0]==8){
+        //Serial.print("I'm moving!");
         analogWrite(Motor_right_PWM,values[4] ); // right motor
         digitalWrite(Motor_right_direction,values[2]); //right
         analogWrite(Motor_left_PWM, values[3]); // left 
@@ -179,8 +177,7 @@ void loop() {
       Serial.print(F(": "));
       Serial.println(payload);  // print the payload's value
       */
+      //delay(50);        // delay in between reads for stability
     }
- delay(100);        // delay in between reads for stability
- digitalWrite(LED1,LOW);
- digitalWrite(LED2,LOW);
+ 
 }

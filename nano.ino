@@ -72,7 +72,7 @@ void setup() {
 
   // set the TX address of the RX node into the TX pipe
   radio.openWritingPipe(address);  // always uses pipe 0
-
+  radio.setDataRate(RF24_2MBPS);
   // additional setup specific to the node's role
   radio.stopListening();  // put radio in TX mode
 
@@ -84,34 +84,24 @@ void setup() {
 }  // setup
 
 void loop() {
-  if (Serial.available()) {
     // change the role via the serial monitor
     String inputString = Serial.readString(); // read the string from Serial
-    /*
-    char c = inputString[0];
-    if (c == '7') {
-      //Serial.print(reinterpret_cast<const char*>(address[0]));
-      radio.openWritingPipe(address[0]);  // always uses pipe 0
-    } else if (c == '8') {
-      //Serial.print(reinterpret_cast<const char*>(address[1]));
-      radio.openWritingPipe(address[1]);  // always uses pipe 0
+    if (inputString.length()>0){
+      inputString=inputString.substring(0,9);
+      //Serial.print(inputString);
+      long sen = atol(inputString.c_str());
+      Serial.println(sen);
+      bool report = radio.write(&sen, sizeof(long));  // transmit & save the report
+      /*
+      if (report){
+        Serial.print("All good in the ");
+      }else{
+        Serial.print("All bad in the hood");
+      }
+      */
+      //delay(50);  // slow transmissions down by 1 second
     }
-    */
-    //String newString = inputString.substring(2);
-    inputString.trim();
-    Serial.print(inputString);
-    long sen = atol(inputString.c_str());
-    Serial.println(sen);
-    bool report = radio.write(&sen, sizeof(long));  // transmit & save the report
-    /*
-    if (report){
-      Serial.print("All good in the ");
-    }else{
-      Serial.print("All bad in the hood");
-    }
-    */
-  }
 
-  delay(1000);  // slow transmissions down by 1 second
+  
 
 }  // loop
