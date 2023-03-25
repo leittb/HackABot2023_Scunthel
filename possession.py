@@ -7,8 +7,8 @@ def who_has_possession(dict):
     for (bot, metric) in dict.items():
         ball_x = dict['B'][0]
         ball_y = dict['B'][1]
-        dude_x = dict[bot][0]
-        dude_y = dict[bot][1]
+        dude_x = metric[0]
+        dude_y = metric[1]
         if bot == 'M7':
             if ball_x < dude_x and ball_x > dude_x - 200 and ball_y < dude_y + 100 and ball_y > dude_y - 40:
                 return 1
