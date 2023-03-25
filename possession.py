@@ -3,15 +3,16 @@
 # Returns 1 if we have possession
 # Returns 2 if no one has possession
 
-for (bot, metric) in locations.items():
-    ball_x = locations['B'][0]
-    ball_y = locations['B'][1]
-    dude_x = locations[bot][0]
-    dude_y = locations[bot][1]
-    if bot == 'M7':
-        if ball_x < dude_x and ball_x > dude_x - 180 and ball_y < dude_y + 100 and ball_y > dude_y - 60:
-            return 1
-    else:
-        if ball_x < dude_x + 80 and ball_x > dude_x - 180 and ball_y < dude_y + 100 and ball_y > dude_y - 60:
-            return 0
-return 2
+def who_has_possession(dict):
+    for (bot, metric) in dict.items():
+        ball_x = dict['B'][0]
+        ball_y = dict['B'][1]
+        dude_x = dict[bot][0]
+        dude_y = dict[bot][1]
+        if bot == 'M7':
+            if ball_x < dude_x and ball_x > dude_x - 200 and ball_y < dude_y + 100 and ball_y > dude_y - 40:
+                return 1
+        else:
+            if ball_x < dude_x + 90 and ball_x > dude_x - 200 and ball_y < dude_y + 100 and ball_y > dude_y - 40:
+                return 0
+    return 2
