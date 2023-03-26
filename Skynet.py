@@ -6,8 +6,8 @@ import time
 import requests
 import re
 
-#server = "http://192.168.4.1"
-server = "http://localhost:8080"
+server = "http://192.168.4.1"
+#server = "http://localhost:8080"
 nano = serial.Serial(port='/dev/cu.usbserial-141440', baudrate=9600, timeout=.01)
 
 # enviroment variables
@@ -44,10 +44,9 @@ def move_bot(bot,Lmot,Rmot):
 
 # finds out whose goal is whose
 def get_goals():
-    found = False
-    environmentDict = get_loc(server)
-    while(not found):
+    while(True):
         try:
+            environmentDict = get_loc(server)
             M8coords = environmentDict["M8"]
 
             G42coords = environmentDict["G42"]
@@ -64,6 +63,7 @@ def get_goals():
                 return environmentDict["G42"], environmentDict["G43"]
         except:
             print("FAIL: Failed to initilazie goals, trying again")
+            time.sleep(0.2)
         
 # finds the tags of the opposing robots
 def get_opponents(environmentDict):
@@ -117,13 +117,20 @@ def isInFront(botCoords,BallCoords):
 def move_towards(mona_id, mona_loc, target_loc):
     angle = math.atan2(mona_loc[1]-target_loc[1],mona_loc[0]-target_loc[0])
     angle_diff = mona_loc[2] - angle
+    if angle_diff > math.pi:
+        angle_diff = math.pi - angle_diff
+    if angle_diff < -math.pi:
+        angle_diff = -math.pi - angle_diff
     tol = 0.15
-    print(mona_loc, target_loc, angle_diff)
+    print(mona_loc, target_loc, mona_loc[2], angle, angle_diff)
     if (angle_diff > tol):
-        move_bot(mona_id,0,10)
+        print("----RIGHT-----")
+        move_bot(mona_id,0,90)
     elif (angle_diff < -tol):
-        move_bot(mona_id,10,0)
+        print("----LEFT-----")
+        move_bot(mona_id,90,0)
     else:
+        print("----ONWARD-----")
         move_bot(mona_id,60,60)
 
 # says wheather a mona is next to a object TODO
