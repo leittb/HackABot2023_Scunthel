@@ -93,23 +93,25 @@ def keyboard_control():
 def who_has_possession(dict):
     for (bot, metric) in dict.items():
         if bot.startswith('M'):
+            left = 200
+            right = 90
+            bottom = 40
+            top = 100
             ball_x = dict['B'][0]
             ball_y = dict['B'][1]
             dude_x = metric[0]
             dude_y = metric[1]
             rotation = 2 * math.pi - metric[2]
-            a_y = dude_y + 100
-            c_x = dude_x - 200
-            new_a_us_x = 0 - 100 * math.sin(rotation) + dude_x
-            new_a_us_y = 0 + 100 * math.cos(rotation) + dude_y
-            new_c_us_x = -200 * math.cos(rotation) + dude_x
-            new_c_us_y = -200 * math.sin(rotation) + dude_y
-            new_a_em_x = 90 * math.cos(rotation) - 100 * math.sin(rotation) + dude_x
-            new_a_em_y = 90 * math.sin(rotation) - 100 * math.cos(rotation) + dude_y
-            new_b_em_x = 90 * math.cos(rotation) - -40 * math.sin(rotation) + dude_x
-            new_b_em_y = 90 * math.sin(rotation) - -40 * math.cos(rotation) + dude_y
-            new_c_em_x = -200 * math.cos(rotation) - -40 * math.sin(rotation) + dude_x
-            new_c_em_y = -200 * math.sin(rotation) - -40 * math.cos(rotation) + dude_y
+            new_a_us_x = 0 - top * math.sin(rotation) + dude_x
+            new_a_us_y = 0 + top * math.cos(rotation) + dude_y
+            new_c_us_x = -left * math.cos(rotation) + dude_x
+            new_c_us_y = -left * math.sin(rotation) + dude_y
+            new_a_em_x = right * math.cos(rotation) - top * math.sin(rotation) + dude_x
+            new_a_em_y = right * math.sin(rotation) - top * math.cos(rotation) + dude_y
+            new_b_em_x = right * math.cos(rotation) - -bottom * math.sin(rotation) + dude_x
+            new_b_em_y = right * math.sin(rotation) - -bottom * math.cos(rotation) + dude_y
+            new_c_em_x = -left * math.cos(rotation) - -bottom * math.sin(rotation) + dude_x
+            new_c_em_y = -left * math.sin(rotation) - -bottom * math.cos(rotation) + dude_y
             if bot == 'M7':
                 if 0 <= (dude_x - new_a_us_x)*(ball_x - new_a_us_x) + (dude_y - new_a_us_y)*(ball_y - new_a_us_y) <= (dude_x - new_a_us_x)*(dude_x - new_a_us_x) + (dude_y - new_a_us_y)*(dude_y - new_a_us_y) and 0 <= (new_c_us_x - dude_x)*(ball_x - dude_x) + (new_c_us_y - dude_y)*(ball_y - dude_y) <= (new_c_us_x - dude_x)*(new_c_us_x - dude_x) + (new_c_us_y - dude_y)*(new_c_us_y - dude_y):
                     return 1
