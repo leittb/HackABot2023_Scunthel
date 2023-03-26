@@ -1,6 +1,6 @@
 
 #webscraping
-from cgi import test
+import codeyModule as cm
 import math
 import time
 import requests
@@ -22,15 +22,19 @@ elif sys.argv[1] == "local":
 
 def get_loc(server):
     # get data from the server
-    response = requests.get(server)
-    html_content = response.text
-    data = [x.strip().split(',') for x in re.findall("[A-Z][0-9]*,[0-9]+,[0-9]+,-?[0-9]\.?[0-9]*",html_content)]
-    # get the locations of the items
-    locations = {}
-    for x in data:
-        locations[x[0]] = [float(i) for i in x[1:]]
-    
-    return locations
+    try:
+        response = requests.get(server)
+        html_content = response.text
+        data = [x.strip().split(',') for x in re.findall("[A-Z][0-9]*,[0-9]+,[0-9]+,-?[0-9]\.?[0-9]*",html_content)]
+        # get the locations of the items
+        locations = {}
+        for x in data:
+            locations[x[0]] = [float(i) for i in x[1:]]
+        
+        return locations
+    except:
+        print("ERROR getting data")
+        return {}
 
 starting = True
 
@@ -42,27 +46,36 @@ while (starting):
     except:
         print("starting")
 
+print("start")
+
 while True:
 
     locations = get_loc(server)
 
     try:
         ball = locations['B']
-        p8 = locations['M2']
+        p8 = locations['M8']
         #p7 = locations['M7']
 
         p8_ang = math.atan((ball[1]-p8[1])/(ball[0]-p8[0]))
         p8_diff = p8[2] - p8_ang
         print(p8_diff)
-        if (p8_diff >= 0):
+        tol = 0.1
+        if (p8_diff > tol):
+            cm.move_bot(8,120-(120*abs(p8_diff)/math.pi),120)
             print("turn left")
-        else:
+        elif (p8_diff < -tol):
+            cm.move_bot(8,120,120-(120*abs(p8_diff)/math.pi))
             print("turn right")
+        else:
+            cm.move_bot(8,120,120)
+            print("forward")
 
     except:
         print("ball error")
+        cm.move_bot(8,0,0)
 
-    time.sleep(1)
+    time.sleep(0.05)
 
 #NOTE tkinter code
 

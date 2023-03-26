@@ -29,6 +29,10 @@ class MyServer(BaseHTTPRequestHandler):
 
             <br>M7,1293,372,-0.42
 
+            <br>M12,1307,718,-0.4
+
+            <br>M13,693,172,-0.42
+
             <br>C0,294,65,-1.5
 
             <br>B,911,585,0
