@@ -23,14 +23,15 @@ def trainToGoal():
     grabberCoords = locations["M8"]
     c0Coords = locations["C0"]
     #train to goal
-
-    move_towards(8,[grabberCoords[0],grabberCoords[1]] , [oppGoal[0],oppGoal[1]] )
     #bull peels away
     bullDistanceToGoal = euclidean_distance(oppGoal[0],oppGoal[1], bullCoords[0],bullCoords[1])
     if bullDistanceToGoal < 200:
         move_towards(7,[bullCoords[0],bullCoords[1]] , [bullCoords[0],c0Coords[1]] )
     else:
         move_towards(7,[bullCoords[0],bullCoords[1]] , [oppGoal[0],oppGoal[1]] )
+
+    move_towards(8,[grabberCoords[0],grabberCoords[1]] , [oppGoal[0],oppGoal[1]] )
+
 
 #+=200 length
 def moveBullToFront(bullCoords, grabberCoords):
