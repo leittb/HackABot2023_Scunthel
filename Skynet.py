@@ -12,7 +12,7 @@ nano = serial.Serial(port='/dev/cu.usbserial-141440', baudrate=115200, timeout=.
 
 # enviroment variables
 ourGoal, oppGoal, opponents = "","",[]
-
+oldPos = [[[],0],[[],0]]
 # euclidiean distance
 def euclidean_distance(l1, l2):
     return math.sqrt((l2[0] - l1[0])**2 + (l2[1] - l1[1])**2)
@@ -156,20 +156,36 @@ while True:
     # logic for MONA 7 "The wedge"
     try:
         mona_7 = locations['M7']
-        eneny_1 = locations[opponents[0]]
-        eneny_2 = locations[opponents[1]]
-        target = eneny_1 if euclidean_distance(mona_7, eneny_1) < euclidean_distance(mona_7, eneny_2) else eneny_2
-        move_towards(7,mona_7,target)
+        if oldPos[0][0] == mona_7:
+            oldPos[0][1]+=1
+        else:
+            oldPos[0][0] = mona_7
+        if oldPos[0][1] > 10:
+            oldPos[0][1]=0
+            move_bot(7,-120,-120)
+        else:
+            eneny_1 = locations[opponents[0]]
+            eneny_2 = locations[opponents[1]]
+            target = eneny_1 if euclidean_distance(mona_7, eneny_1) < euclidean_distance(mona_7, eneny_2) else eneny_2
+            move_towards(7,mona_7,target)
     except:
         print("FAIL: Unamble to calculate MONA 7 movement")
                                                                                                                                                                                                                                                
     # logic for MONA 8 "the grabber"
     try:
         mona_8 = locations['M8']
-        if isInFront(mona_8,ball):
-            move_towards(8,mona_8,oppGoal)
+        if oldPos[1][0] == mona_8:
+            oldPos[1][1]+=1
         else:
-            move_towards(8,mona_8,ball)
+            oldPos[1][0] = mona_8
+        if oldPos[0][1] > 10:
+            oldPos[0][1]=0
+            move_bot(7,-120,-120)
+        else:
+            if isInFront(mona_8,ball):
+                move_towards(8,mona_8,oppGoal)
+            else:
+                move_towards(8,mona_8,ball)
         #keyboard_control()
     except:
         print("FAIL: Unamble to calculate MONA 8 movement")
