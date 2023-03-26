@@ -64,7 +64,7 @@ def get_goals():
         except:
             print("FAIL: Failed to initilazie goals, trying again")
             time.sleep(0.2)
-        
+
 # finds the tags of the opposing robots
 def get_opponents(environmentDict):
     try:
@@ -128,7 +128,7 @@ def isInFront(botCoords,BallCoords):
     if abs(angle_diff)<angleTol and euclidean_distance(botCoords,BallCoords)<130:
         return True
     return False
-        
+
 # move the robot toward the ball
 def move_towards(mona_id, mona_loc, target_loc):
     angle = math.atan2(mona_loc[1]-target_loc[1],mona_loc[0]-target_loc[0])
@@ -256,6 +256,43 @@ def isItInCorner(environmentDict):
 
 def ballSide(ballC):
     return euclidean_distance(ballC,ourGoal)<euclidean_distance(ballC,oppGoal)
+
+def isInOurCorner():
+    bullCoords = locations["M7"]
+    grabberCoords = locations["M8"]
+    ballCoords =  locations["B"]
+
+    #bull dozer keeps
+    bullDistToGoal = euclidean_distance([bullCoords[0], bullCoords[1]], [ourGoal[0],ourGoal[1]])
+    if bullDistToGoal > 50:
+        move_towards(7, [bullCoords[0], bullCoords[1]], [ourGoal[0],ourGoal[1]])
+    else:
+        move_bot(7,0,0)
+
+    #needs to know to rotate
+    if( isInFront(grabberCoords,grabberCoords)):
+        move_towards(8, [grabberCoords[0], grabberCoords[1]], [oppGoal[0],oppGoal[1]])
+    else:
+        #grapper collects
+        move_towards(8, [grabberCoords[0], grabberCoords[1]], [ballCoords[0],ballCoords[1]])
+
+def isInTheirCorner():
+    bullCoords = locations["M7"]
+    grabberCoords = locations["M8"]
+    ballCoords =  locations["B"]
+
+    #bull mid blocks
+    newXY = [(ballCoords[0] + ourGoal[0])/2, (ballCoords[1] + ourGoal[1])/2]
+    move_towards(8, [bullCoords[0], bullCoords[1]], [newXY[0],newXY[1]])
+
+    #grabber keeps
+    grabberDistToGoal = euclidean_distance([grabberCoords[0], grabberCoords[1]], [ourGoal[0],ourGoal[1]])
+    if grabberDistToGoal > 50:
+        move_towards(8, [grabberCoords[0], grabberCoords[1]], [ourGoal[0],ourGoal[1]])
+    else:
+        move_bot(8,0,0)
+
+
 #initializes variables
 def init():
     global ourGoal, oppGoal, opponents
@@ -307,9 +344,9 @@ while True:
                 midBlock()
         else:
             if ballSide(ball):
-                move_towards(8,mona_8,ball)
+                isInOurCorner()
             else:
-                midBlock()
+                isInTheirCorner()
     if oldPos[0][0] == mona_7:
         oldPos[0][1]+=1
     else:
