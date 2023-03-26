@@ -99,7 +99,15 @@ def who_has_possession(dict):
             if ball_x < dude_x + 90 and ball_x > dude_x - 200 and ball_y < dude_y + 100 and ball_y > dude_y - 40:
                 return 0
     return 2
-
+# Function to check if ball is in front of car
+def isInFront(botCoords,BallCoords):
+    angle = math.atan((BallCoords[1]-botCoords[1])/(BallCoords[0]-botCoords[0]))
+    angle_diff = botCoords[2] - angle
+    angleTol = 0.1
+    if abs(angle_diff)<angleTol and euclidean_distance(botCoords,BallCoords)<100:
+        return True
+    return False
+        
 # move the robot toward the ball
 def move_towards(mona_id, mona_loc, target_loc):
     angle = math.atan((target_loc[1]-mona_loc[1])/(target_loc[0]-mona_loc[0]))
