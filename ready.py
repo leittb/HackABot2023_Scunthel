@@ -9,7 +9,9 @@ def write_read(x):
     return data
 
 while True:
-    data = arduino.readline()
+    if arduino.in_waiting:
+        data = arduino.readline()
+        print(data) # printing the value
     time.sleep(0.5)
     #value = write_read(num)
-    print(data) # printing the value
+    

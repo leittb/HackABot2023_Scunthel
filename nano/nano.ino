@@ -42,7 +42,7 @@ void loop() {
 //      Serial.println(message);
       bool report = radio.write(&buf, 4);
       if (report) {
-        Serial.println("Transmited " + String(message) + " successfully! ");
+        Serial.println("Transmited successfully! ");
       }
     }
     delay(50);
