@@ -158,6 +158,104 @@ def at(mona_loc, target_loc):
     tolerance = 15
     return euclidean_distance(mona_loc, target_loc) <= tolerance
 
+#checks bull is front of ball
+def isBullInFront(ballCoords,bullCoords):
+    angle = math.atan((bullCoords[1]-ballCoords[1])/(bullCoords[0]-ballCoords[0]))
+    angle_diff = math.pi - abs(ballCoords[2] - angle)
+    angleTol = 0.1
+    if abs(angle_diff)<angleTol and euclidean_distance(ballCoords,bullCoords)<120:
+        return True
+    return False
+
+def move_towards(mona_id, mona_loc, target_loc):
+    angle = math.atan((target_loc[1]-mona_loc[1])/(target_loc[0]-mona_loc[0]))
+    angle_diff = mona_loc[2] - angle
+    tol = 0.1
+    if (angle_diff > tol):
+        move_bot(mona_id,60-(60*abs(angle_diff)/math.pi),60)
+    elif (angle_diff < -tol):
+        move_bot(mona_id,60,60-(60*abs(angle_diff)/math.pi))
+    else:
+        move_bot(mona_id,120,120)
+
+def trainToGoal():
+    bullCoords = locations["M7"]
+    grabberCoords = locations["M8"]
+    c0Coords = locations["C0"]
+    #train to goal
+    #bull peels away
+    bullDistanceToGoal = euclidean_distance(oppGoal[0],oppGoal[1], bullCoords[0],bullCoords[1])
+    if bullDistanceToGoal < 200:
+        move_towards(7,[bullCoords[0],bullCoords[1]] , [bullCoords[0],c0Coords[1]] )
+    else:
+        move_towards(7,[bullCoords[0],bullCoords[1]] , [oppGoal[0],oppGoal[1]] )
+
+    move_towards(8,[grabberCoords[0],grabberCoords[1]] , [oppGoal[0],oppGoal[1]] )
+
+#+=200 length
+def moveBullToFront(bullCoords, grabberCoords):
+    if not(isBullInFront() ) :
+        #work out which x + y go
+        newX = -math.sin(grabberCoords[2])*200
+        newY = math.cos(grabberCoords[2])*200
+        #move bots there
+        move_towards(7,[bullCoords[0], bullCoords[1]] , [newX,newY])
+    else:
+        #start train
+        trainToGoal()
+def defencePressure():
+    #our side their possession defence
+    #need to take ball out
+    bullCoords = locations["M7"]
+    grabberCoords = locations["M8"]
+    ballCoords =  locations["B"]
+
+    #bull tackles
+    move_towards(7, [bullCoords[0], bullCoords[1]], [ballCoords[0],ballCoords[1]])
+
+    #move grabber to goal
+    grabberDistToGoal = euclidean_distance([grabberCoords[0], grabberCoords[1]], [ourGoal[0],ourGoal[1]])
+    if grabberDistToGoal > 50:
+        move_towards(8, [grabberCoords[0], grabberCoords[1]], [ourGoal[0],ourGoal[1]])
+    else:
+        move_bot(8,0,0)
+def midBlock():
+    #their side their possession defence
+    #can wait and block
+    bullCoords = locations["M7"]
+    grabberCoords = locations["M8"]
+    ballCoords =  locations["B"]
+
+    #bull tackles
+    move_towards(7, [bullCoords[0], bullCoords[1]], [ballCoords[0],ballCoords[1]])
+
+    #grabber blocks halfway
+    newXY = [(ballCoords[0] + ourGoal[0])/2, (ballCoords[1] + ourGoal[1])/2]
+    move_towards(8, [grabberCoords[0], grabberCoords[1]], [newXY[0],newXY[1]])
+# return 0 not corner, return 1 - Top left, return 2 - Top right, return 3 - Bottom right, return 3 - Bottom left
+def isItInCorner(environmentDict):
+    bCoords = environmentDict["B"]
+    c0Coords = environmentDict["C0"]
+    c1Coords = environmentDict["C1"]
+
+    def euclidean_distance(x1, y1, x2, y2):
+        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+    cornersDist = []
+    cornersDist[0] =  euclidean_distance(bCoords[0],bCoords[1],c0Coords[0],c0Coords[1] )
+    cornersDist[1] =  euclidean_distance(bCoords[0],bCoords[1],c1Coords[0],c0Coords[1] )
+    cornersDist[2] =  euclidean_distance(bCoords[0],bCoords[1],c1Coords[0],c1Coords[1] )
+    cornersDist[3] =  euclidean_distance(bCoords[0],bCoords[1],c0Coords[0],c1Coords[1] )
+
+    isCorner = 0
+    for x in range(0,4):
+        if cornersDist < 170:
+            isCorner = x
+
+    return x
+
+def ballSide(ballC):
+    return euclidean_distance(ballC,ourGoal)<euclidean_distance(ballC,oppGoal)
 #initializes variables
 def init():
     global ourGoal, oppGoal, opponents
@@ -185,46 +283,49 @@ while True:
     # logic for MONA 7 "The wedge"
     try:
         mona_7 = locations['M7']
-        if oldPos[0][0] == mona_7:
-            oldPos[0][1]+=1
-        else:
-            oldPos[0][0] = mona_7
-        if oldPos[0][1] > 10 and oldPos[0][1] < 20:
-            oldPos[0][1]+=1
-            move_bot(7,-120,-120)
-        elif oldPos[0][1] > 20:
-            oldPos[0][1]=0
-        else:
-            eneny_1 = locations[opponents[0]]
-            eneny_2 = locations[opponents[1]]
-            target = eneny_1 if euclidean_distance(mona_7, eneny_1) < euclidean_distance(mona_7, eneny_2) else eneny_2
-            move_towards(7,mona_7,target)
     except:
         print("FAIL: Unamble to calculate MONA 7 movement")
-
-    time.sleep(0.1)                                                                                                                                                                                                                                     
-    # logic for MONA 8 "the grabber"
+        mona_7 = [0,0,0]
     try:
         mona_8 = locations['M8']
-        if isInFront(mona_8,ball):
-            print("GOING FPR GOAL")
-            move_towards(8,mona_8,oppGoal)
-        if oldPos[1][0] == mona_8:
-            oldPos[1][1]+=1
-        else:
-            oldPos[1][0] = mona_8
-        if oldPos[1][1] > 10 and oldPos[1][1] < 20:
-            oldPos[1][1]+=1
-            move_bot(8,-120,-120)
-        elif oldPos[1][1] > 20:
-            oldPos[1][1]=0
-        else:
-            if isInFront(mona_8,ball):
-                move_towards(8,mona_8,oppGoal)
-            else:
-                move_towards(8,mona_8,ball)
-        #keyboard_control()
     except:
         print("FAIL: Unamble to calculate MONA 8 movement")
+        mona_8 = [0,0,0]
 
-    
+    if who_has_possession()==1: #US
+        moveBullToFront()
+    elif who_has_possession()==0: #THEM
+        if ballSide(ball):
+            defencePressure()
+        else:
+            midBlock()
+    elif who_has_possession()==2: #NO ONE
+        if isItInCorner(locations)==0:
+            if ballSide(ball):
+                move_towards(8,mona_8,ball)
+            else:
+                midBlock()
+        else:
+            if ballSide(ball):
+                move_towards(8,mona_8,ball)
+            else:
+                midBlock()
+    if oldPos[0][0] == mona_7:
+        oldPos[0][1]+=1
+    else:
+        oldPos[0][0] = mona_7
+    if oldPos[0][1] > 10 and oldPos[0][1] < 12:
+        oldPos[0][1]+=1
+        move_bot(7,-120,-120)
+    elif oldPos[0][1] >= 12:
+        oldPos[0][1]=0
+
+    if oldPos[1][0] == mona_8:
+        oldPos[1][1]+=1
+    else:
+        oldPos[1][0] = mona_8
+    if oldPos[1][1] > 10 and oldPos[1][1] < 12:
+        oldPos[1][1]+=1
+        move_bot(8,-120,-120)
+    elif oldPos[1][1] >= 12:
+        oldPos[1][1]=0
