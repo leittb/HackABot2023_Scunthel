@@ -114,9 +114,9 @@ def move_towards(mona_id, mona_loc, target_loc):
     angle_diff = mona_loc[2] - angle
     tol = 0.1
     if (angle_diff > tol):
-        move_bot(mona_id,120-(120*abs(angle_diff)/math.pi),120)
+        move_bot(mona_id,60-(60*abs(angle_diff)/math.pi),60)
     elif (angle_diff < -tol):
-        move_bot(mona_id,120,120-(120*abs(angle_diff)/math.pi))
+        move_bot(mona_id,60,60-(60*abs(angle_diff)/math.pi))
     else:
         move_bot(mona_id,120,120)
 
@@ -166,7 +166,10 @@ while True:
     # logic for MONA 8 "the grabber"
     try:
         mona_8 = locations['M8']
-        move_towards(8,mona_8,ball)
+        if isInFront(mona_8,ball):
+            move_towards(8,mona_8,oppGoal)
+        else:
+            move_towards(8,mona_8,ball)
         #keyboard_control()
     except:
         print("FAIL: Unamble to calculate MONA 8 movement")
