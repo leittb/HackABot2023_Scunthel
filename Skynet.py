@@ -160,9 +160,11 @@ while True:
             oldPos[0][1]+=1
         else:
             oldPos[0][0] = mona_7
-        if oldPos[0][1] > 10:
-            oldPos[0][1]=0
+        if oldPos[0][1] > 10 and oldPos[0][1] < 20:
+            oldPos[0][1]+=1
             move_bot(7,-120,-120)
+        elif oldPos[0][1] > 20:
+            oldPos[0][1]=0
         else:
             eneny_1 = locations[opponents[0]]
             eneny_2 = locations[opponents[1]]
@@ -178,9 +180,11 @@ while True:
             oldPos[1][1]+=1
         else:
             oldPos[1][0] = mona_8
-        if oldPos[0][1] > 10:
-            oldPos[0][1]=0
-            move_bot(7,-120,-120)
+        if oldPos[1][1] > 10 and oldPos[1][1] < 20:
+            oldPos[1][1]+=1
+            move_bot(8,-120,-120)
+        elif oldPos[1][1] > 20:
+            oldPos[1][1]=0
         else:
             if isInFront(mona_8,ball):
                 move_towards(8,mona_8,oppGoal)
