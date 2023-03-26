@@ -6,13 +6,13 @@ import time
 import requests
 import re
 
-server = "http://192.168.4.1"
-#server = "http://localhost:8080"
-nano = serial.Serial(port='/dev/cu.usbserial-141440', baudrate=115200, timeout=.01)
+#server = "http://192.168.4.1"
+server = "http://localhost:8080"
+nano = serial.Serial(port='/dev/cu.usbserial-141440', baudrate=9600, timeout=.01)
 
 # enviroment variables
-ourGoal, oppGoal, opponents = "","",[]
-
+ourGoal, oppGoal, opponents = [],[],[]
+oldPos = [[[],0],[[],0]]
 # euclidiean distance
 def euclidean_distance(l1, l2):
     return math.sqrt((l2[0] - l1[0])**2 + (l2[1] - l1[1])**2)
@@ -39,27 +39,31 @@ def move_bot(bot,Lmot,Rmot):
     rd = "1" if Rmot > 0 else "0"
     message = str(bot)+str(ld)+str(rd)+str(abs(Lmot)).zfill(3)+str(abs(Rmot)).zfill(3)+'\n'
     nano.write(bytes(message, 'utf-8'))
+    print("BYTES :", bytes(message, 'utf-8'))
+    print("RESULT : ", nano.readline())
 
 # finds out whose goal is whose
-def get_goals(environmentDict):
-    try:
-        M8coords = environmentDict["M8"]
+def get_goals():
+    found = False
+    environmentDict = get_loc(server)
+    while(not found):
+        try:
+            M8coords = environmentDict["M8"]
 
-        G42coords = environmentDict["G42"]
-        G43coords = environmentDict["G43"]
+            G42coords = environmentDict["G42"]
+            G43coords = environmentDict["G43"]
 
-        euclid42 = euclidean_distance(M8coords, G42coords)
-        euclid43 = euclidean_distance(M8coords, G43coords)
+            euclid42 = euclidean_distance(M8coords, G42coords)
+            euclid43 = euclidean_distance(M8coords, G43coords)
 
-        #chooses our goal
-        print("PASS: Successfuly found both goals")
-        if euclid42 > euclid43:
-            return "G43", "G42"
-        else:
-            return "G42", 'G43'
-    except:
-        print("FAIL: Failed to initilazie goals")
-        return "",""
+            #chooses our goal
+            print("PASS: Successfuly found both goals")
+            if euclid42 > euclid43:
+                return environmentDict["G43"], environmentDict["G42"]
+            else:
+                return environmentDict["G42"], environmentDict["G43"]
+        except:
+            print("FAIL: Failed to initilazie goals, trying again")
         
 # finds the tags of the opposing robots
 def get_opponents(environmentDict):
@@ -113,26 +117,28 @@ def who_has_possession(dict):
                 if 0 <= (new_b_em_x - new_a_em_x)*(ball_x - new_a_em_x) + (new_b_em_y - new_a_em_y)*(ball_y - new_a_em_y) <= (new_b_em_x - new_a_em_x)*(new_b_em_x - new_a_em_x) + (new_b_em_y - new_a_em_y)*(new_b_em_y + new_a_em_y) and 0 <= (new_c_em_x - new_b_em_x)*(ball_x - new_b_em_x) + (new_c_em_y - new_b_em_y)*(ball_y - new_b_em_y) <= (new_c_em_x - new_b_em_x)*(new_c_em_x - new_b_em_x) + (new_c_em_y - new_b_em_y)*(new_c_em_y - new_b_em_y):
                     return 0
     return 2
+
 # Function to check if ball is in front of car
 def isInFront(botCoords,BallCoords):
-    angle = math.atan((BallCoords[1]-botCoords[1])/(BallCoords[0]-botCoords[0]))
+    angle = math.atan2(botCoords[1]-BallCoords[1],botCoords[0]-BallCoords[0])
     angle_diff = botCoords[2] - angle
-    angleTol = 0.1
-    if abs(angle_diff)<angleTol and euclidean_distance(botCoords,BallCoords)<100:
+    angleTol = 0.15
+    if abs(angle_diff)<angleTol and euclidean_distance(botCoords,BallCoords)<130:
         return True
     return False
         
 # move the robot toward the ball
 def move_towards(mona_id, mona_loc, target_loc):
-    angle = math.atan((target_loc[1]-mona_loc[1])/(target_loc[0]-mona_loc[0]))
+    angle = math.atan2(mona_loc[1]-target_loc[1],mona_loc[0]-target_loc[0])
     angle_diff = mona_loc[2] - angle
-    tol = 0.1
+    tol = 0.15
+    print(mona_loc, target_loc, angle_diff)
     if (angle_diff > tol):
-        move_bot(mona_id,60-(60*abs(angle_diff)/math.pi),60)
+        move_bot(mona_id,0,10)
     elif (angle_diff < -tol):
-        move_bot(mona_id,60,60-(60*abs(angle_diff)/math.pi))
+        move_bot(mona_id,10,0)
     else:
-        move_bot(mona_id,120,120)
+        move_bot(mona_id,60,60)
 
 # says wheather a mona is next to a object TODO
 def next_to(mona_loc, target_loc):
@@ -147,7 +153,7 @@ def at(mona_loc, target_loc):
 def init():
     global ourGoal, oppGoal, opponents
     init_locations = get_loc(server)
-    ourGoal, oppGoal = get_goals(init_locations)
+    ourGoal, oppGoal = get_goals()
     opponents = get_opponents(init_locations)
 
 # START of program
@@ -156,7 +162,7 @@ init()
 # main execution loop
 while True:
 
-    time.sleep(0.05)
+    time.sleep(0.1)
 
     locations = get_loc(server)
 
@@ -170,20 +176,44 @@ while True:
     # logic for MONA 7 "The wedge"
     try:
         mona_7 = locations['M7']
-        eneny_1 = locations[opponents[0]]
-        eneny_2 = locations[opponents[1]]
-        target = eneny_1 if euclidean_distance(mona_7, eneny_1) < euclidean_distance(mona_7, eneny_2) else eneny_2
-        move_towards(7,mona_7,target)
+        if oldPos[0][0] == mona_7:
+            oldPos[0][1]+=1
+        else:
+            oldPos[0][0] = mona_7
+        if oldPos[0][1] > 10 and oldPos[0][1] < 20:
+            oldPos[0][1]+=1
+            move_bot(7,-120,-120)
+        elif oldPos[0][1] > 20:
+            oldPos[0][1]=0
+        else:
+            eneny_1 = locations[opponents[0]]
+            eneny_2 = locations[opponents[1]]
+            target = eneny_1 if euclidean_distance(mona_7, eneny_1) < euclidean_distance(mona_7, eneny_2) else eneny_2
+            move_towards(7,mona_7,target)
     except:
         print("FAIL: Unamble to calculate MONA 7 movement")
-                                                                                                                                                                                                                                               
+
+    time.sleep(0.1)                                                                                                                                                                                                                                     
     # logic for MONA 8 "the grabber"
     try:
         mona_8 = locations['M8']
         if isInFront(mona_8,ball):
+            print("GOING FPR GOAL")
             move_towards(8,mona_8,oppGoal)
+        if oldPos[1][0] == mona_8:
+            oldPos[1][1]+=1
         else:
-            move_towards(8,mona_8,ball)
+            oldPos[1][0] = mona_8
+        if oldPos[1][1] > 10 and oldPos[1][1] < 20:
+            oldPos[1][1]+=1
+            move_bot(8,-120,-120)
+        elif oldPos[1][1] > 20:
+            oldPos[1][1]=0
+        else:
+            if isInFront(mona_8,ball):
+                move_towards(8,mona_8,oppGoal)
+            else:
+                move_towards(8,mona_8,ball)
         #keyboard_control()
     except:
         print("FAIL: Unamble to calculate MONA 8 movement")
